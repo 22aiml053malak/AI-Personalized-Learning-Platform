@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>{% block title %}AI Powered Personalised Learning Platform{% endblock %}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('home') }}">AI Powered Personalised Learning Platform</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+                data-bs-target="#navbarNav" aria-controls="navbarNav" 
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            {% if current_user.is_authenticated %}
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+              </li>
+              {% if current_user.is_admin %}
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin_courses') }}">Admin</a>
+              </li>
+              {% endif %}
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+              </li>
+            {% else %}
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+              </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="container mt-4">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </div>
+    
+    <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs"></script>
+  </body>
+</html>
+<style>
+  body {
+    background-color: #f3e8ff; /* light purple */
+    background-image: 
+      url('{{ url_for('static', filename='bg-elements/book.svg') }}'),
+      url('{{ url_for('static', filename='bg-elements/brain.svg') }}'),
+      url('{{ url_for('static', filename='bg-elements/atom.svg') }}');
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-position: top left, bottom right, center;
+    background-size: 100px, 120px, 80px;
+    font-family: 'Poppins', sans-serif;
+    color: #1e1e50; /* dark navy text */
+  }
+
+  .glow-button {
+    background-color: #3f3d56; /* navy blue */
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(111, 66, 193, 0.5); /* purple glow */
+    transition: all 0.3s ease-in-out;
+  }
+
+  .glow-button:hover {
+    background-color: #6f42c1; /* lighter purple */
+    box-shadow: 0 0 15px rgba(111, 66, 193, 0.7);
+  }
+
+  .drawer {
+    background-color: #dcd6f7; /* very light purple */
+    box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+  }
+
+  .drawer-header {
+    border-bottom: 1px solid #a29bfe;
+    padding: 15px;
+  }
+
+  .drawer-profile-pic {
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border: 2px solid #6f42c1;
+  }
+
+  .drawer-username {
+    color: #3f3d56;
+    font-weight: bold;
+    margin-top: 10px;
+  }
+
+  .dashboard-button,
+  .upload-button,
+  .delete-button,
+  .logout-button {
+    display: block;
+    margin: 10px 0;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .drawer-button i {
+    font-size: 24px;
+    color: #3f3d56;
+  }
+</style>

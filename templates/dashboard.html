@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        /* General Styling */
+        body {
+            background-color: #dcd6f7; /* Matches drawer background */
+            color: #f1f1f1;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        /* Dashboard Container */
+        .dashboard-container {
+            margin-top: 50px;
+        }
+        
+        /* Navbar */
+        .navbar {
+            background: linear-gradient(135deg, #3f3d56, #3f3d56); /* Matches AI theme */
+            box-shadow: 0px 4px 15px rgba(0, 212, 255, 0.6);
+        }
+        
+        /* Profile Card */
+        .profile-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: linear-gradient(135deg, #3f3d56, #3f3d56); /* Purple gradient */
+            border-radius: 12px;
+            box-shadow: 0px 4px 10px rgba(106, 90, 205, 0.4); /* Soft purple glow */
+        }
+        
+        
+        .profile-img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #00d4ff; /* AI neon theme */
+        }
+        
+        /* Course Cards */
+        .course-card {
+            border-radius: 12px;
+            overflow: hidden;
+            background: linear-gradient(135deg, #001f3f, #003366);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .course-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0px 5px 15px rgba(0, 212, 255, 0.5);
+        }
+        
+        .course-img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+        }
+        
+        /* Quiz Section */
+        #quiz-section {
+            margin-top: 40px;
+            background: linear-gradient(135deg, #0a1931, #5a4fcf);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 10px rgba(0, 212, 255, 0.3);
+        }
+        h3 {
+            color:  #6A5ACD; /* Dark Purple */
+            font-weight: bold;
+        }
+        
+        
+        /* Custom Buttons */
+.btn-custom {
+    background: #3f3d56; /* Soft Purple - Matches Sidebar */
+    border: none;
+    color: #ffffff; /* White text for contrast */
+    padding: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 8px;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-custom:hover {
+    background: #5a4fcf; /* Slightly darker purple on hover */
+    box-shadow: 0px 0px 10px rgba(106, 90, 205, 0.8); /* Subtle glow effect */
+}
+.text-muted {
+    color: #ffffff !important; /* White color with high priority */
+}
+
+
+        
+        /* Loading Animation */
+        #loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .ai-assist-card {
+            background: linear-gradient(135deg, #2c2a4a, #443f77); /* dark purple gradient */
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.4);
+            color: #ffffff;
+        }
+        
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('home') }}">Home</a>
+
+            <div class="d-flex">
+                <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container dashboard-container">
+       <!-- Profile Section -->
+<div class="profile-card mb-4 p-3">
+    {% if current_user.is_authenticated %}
+        {% if current_user.profile_pic %}
+            <img src="{{ url_for('static', filename='profile_pics/' + current_user.profile_pic) }}" 
+                 alt="Profile Image" 
+                 class="profile-img">
+        {% else %}
+            <img src="{{ url_for('static', filename='images/default_profile.jpg') }}" 
+                 alt="Default Profile Image" 
+                 class="profile-img">
+        {% endif %}
+        <div>
+            <h4 class="mb-0">{{ current_user.username }}</h4>
+            <p class="text-muted mb-0">Welcome to your dashboard!</p>
+        </div>
+    {% endif %}
+</div>
+
+
+        <!-- Enrollments Section -->
+        <h3>Your Enrolled Courses</h3>
+        {% if enrollments %}
+            <div class="row mt-3">
+                {% for course in enrollments %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card course-card">
+                            <img src="{{ url_for('static', filename='images/' + course.image_filename) }}" 
+                                 onerror="this.src='{{ url_for('static', filename='images/default_course.jpg') }}';" 
+                                 alt="{{ course.title }}" class="course-img">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">{{ course.title }}</h5>
+                                <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-custom">View Course</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted mt-3">No enrollments yet.</p>
+        {% endif %}
+
+        <a href="{{ url_for('explore') }}" class="btn btn-outline-warning mt-4">Explore More Courses</a>
+
+<!-- AI Assist Section -->
+<div class="ai-assist-card mt-4">
+    <h3 class="mb-3 text-white">Assist ✨</h3>
+<!-- File Upload Section -->
+<form id="upload-form" enctype="multipart/form-data" class="mb-3">
+    <div class="input-group">
+        <input type="file" id="file-input" name="file" class="form-control">
+        <button type="button" id="extract-concepts-file-btn" class="btn btn-secondary" disabled>Extract Concepts</button>
+    </div>
+</form>
+
+
+<!-- Text Area for Concept Extraction -->
+<textarea id="concept-text" class="form-control mt-3" rows="3" placeholder="Enter text to extract concepts..."></textarea>
+<button id="extract-concepts-btn" class="btn btn-success mt-2 btn-custom">Extract Concepts</button>
+
+<!-- Loading Indicator -->
+<div id="loading" class="text-center mt-3" style="display: none;">
+    <div class="spinner-border text-warning" role="status"></div>
+    <p class="mt-2">Processing...</p>
+</div>
+
+<!-- Display Extracted Concepts -->
+<div id="concepts-list" class="mt-3"></div>
+
+<!-- Start Quiz Button (Initially Hidden) -->
+<button id="start-quiz-btn" class="btn btn-warning mt-3 btn-custom" style="display: none;">Start Quiz</button>
+
+<!-- Generate Quiz Button (Initially Hidden) -->
+<button id="generate-quiz-btn" class="btn btn-primary mt-3 btn-custom" style="display: none;">Generate Quiz</button>
+
+<!-- Quiz Questions -->
+<div id="quiz-questions" class="mt-3"></div>
+
+
+
+<!-- Submit Quiz Button (Initially Hidden) -->
+<button id="submit-quiz-btn" class="btn btn-info mt-3 btn-custom" style="display: none;">
+    Submit Answers
+</button>
+ <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
+        <div class="d-flex justify-content-center align-items-center" style="min-height: 300px;">
+            <dotlottie-player 
+                src="https://lottie.host/9649c4f7-5606-4139-9192-64c42046e887/Ds4FDkGZFH.lottie" 
+                background="transparent" 
+                speed="1" 
+                style="width: 300px; height: 300px;" 
+                loop autoplay>
+            </dotlottie-player>
+        </div>
+
+<!-- Quiz Results -->
+<div id="quiz-results" class="mt-4"></div>
+
+</div>
+<script>
+   
+    $(document).ready(function() {
+        let extractedConcepts = [];
+        let quizData = [];
+
+        function showLoading() { $("#loading").show(); disableButtons(); }
+        function hideLoading() { $("#loading").hide(); enableButtons(); }
+        function disableButtons() { $("button").attr("disabled", true); }
+        function enableButtons() { $("button").attr("disabled", false); }
+        function showAlert(message, type = "danger") {
+            $("#alerts").html(`<div class="alert alert-${type}">${message}</div>`);
+        }
+
+        
+
+        // Extract Concepts from text input
+        $("#extract-concepts-btn").click(function() {
+            let text = $("#concept-text").val().trim();
+            if (!text) {
+                showAlert("Please enter text to extract concepts.");
+                return;
+            }
+
+            showLoading();
+
+            $.ajax({
+                url: "/extract_concepts",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ text: text }),
+                success: function(response) {
+                    hideLoading();
+                
+                    if (response.concepts) {
+                        let conceptNames = response.concepts.map(c => c.name).join(", ");
+                        $("#concept-text").val(conceptNames); // ✅ Show extracted concepts in textarea
+                        displayExtractedConcepts(response);
+                    } else {
+                        showAlert("No concepts found.", "warning");
+                    }
+                }
+            });
+        });
+
+        // Enable file upload button only when a file is selected
+        $("#file-input").change(function() {
+            $("#extract-concepts-file-btn").prop("disabled", !this.files.length);
+        });
+
+        $("#extract-concepts-file-btn").click(function() {
+            let file = $("#file-input")[0].files[0];
+            if (!file) {
+                showAlert("Please select a file.");
+                return;
+            }
+        
+            let formData = new FormData();
+            formData.append("file", file);
+        
+            showLoading();
+        
+            $.ajax({
+                url: "/extract_concepts",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    hideLoading();
+                    
+                    if (response.extracted_text) {
+                        $("#concept-text").val(response.extracted_text);  // ✅ Show extracted text in textarea
+                    }
+        
+                    if (response.concepts) {
+                        displayExtractedConcepts(response);  // ✅ Show extracted concepts
+                    } else {
+                        showAlert("No concepts found.", "warning");
+                    }
+                },
+                error: function() {
+                    hideLoading();
+                    showAlert("Error extracting text from file.");
+                }
+            });
+        });
+        
+        
+
+        // Function to display extracted concepts
+        function displayExtractedConcepts(response) {
+            if (response.concepts && response.concepts.length > 0) {
+                extractedConcepts = response.concepts.map(c => c.name);
+                $("#concepts-list").html(`
+                    <h5>Extracted Concepts:</h5>
+                    <ul class="list-group">
+                        ${extractedConcepts.map(concept => `<li class='list-group-item'>${concept}</li>`).join("")}
+                    </ul>`);
+                $("#start-quiz-btn").show();
+                $("#generate-quiz-btn").hide();
+            } else {
+                $("#concepts-list").html("<div class='alert alert-warning'>No concepts found.</div>");
+            }
+        }
+
+        // Start Quiz - Shows the Generate Quiz button
+        $("#start-quiz-btn").click(function() {
+            $(this).hide();
+            $("#generate-quiz-btn").show();
+        });
+
+        // Generate Quiz
+        $("#generate-quiz-btn").click(function() {
+            if (extractedConcepts.length === 0) {
+                showAlert("No concepts available to generate a quiz.", "warning");
+                return;
+            }
+
+            showLoading();
+
+            $.ajax({
+                url: "/generate_quiz",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ concepts: extractedConcepts }),
+                success: function(response) {
+                    hideLoading();
+                    if (response.quiz && response.quiz.length > 0) {
+                        quizData = response.quiz;
+                        $("#quiz-questions").html("<h5>Quiz Questions:</h5>" +
+                            quizData.map((q, i) => {
+                                let questionHtml = ` 
+                                    <div class="card mt-2 p-3">
+                                        <p><b>${i + 1}. ${q.question}</b></p>
+                                `;
+
+                                if (q.type === "MCQ") {
+                                    questionHtml += q.choices.map((option, j) => `
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="answer${i}" id="answer${i}-${j}" value="${option}">
+                                            <label class="form-check-label" for="answer${i}-${j}">${option}</label>
+                                        </div>
+                                    `).join("");
+                                } else if (q.type === "True/False") {
+                                    questionHtml += `
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="answer${i}" id="answer${i}-True" value="True">
+                                            <label class="form-check-label" for="answer${i}-True">True</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="answer${i}" id="answer${i}-False" value="False">
+                                            <label class="form-check-label" for="answer${i}-False">False</label>
+                                        </div>
+                                    `;
+                                } else {
+                                    questionHtml += `<input type="text" class="form-control" id="answer${i}" placeholder="Your answer...">`;
+                                }
+
+                                questionHtml += `</div>`;
+                                return questionHtml;
+                            }).join(""));
+
+                        $("#submit-quiz-btn").show();
+                    } else {
+                        showAlert("Quiz could not be generated.", "warning");
+                    }
+                },
+                error: function() {
+                    hideLoading();
+                    showAlert("Error generating quiz.");
+                }
+            });
+        }); 
+
+        // Submit Quiz - Evaluate the answers
+        $("#submit-quiz-btn").click(function() {
+            let userAnswers = [];
+            let allAnswered = true;
+
+            quizData.forEach((q, i) => {
+                let selectedAnswer = $(`input[name='answer${i}']:checked`).val() || $(`#answer${i}`).val().trim();
+                if (!selectedAnswer) allAnswered = false;
+                userAnswers.push(selectedAnswer || "");
+            });
+
+            if (!allAnswered) {
+                showAlert("Please answer all questions before submitting.", "warning");
+                return;
+            }
+
+            showLoading();
+
+            $.ajax({
+                url: "/evaluate_answers",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ quiz: quizData, answers: userAnswers }),
+                success: function(response) {
+                    hideLoading();
+            
+                    if (!response.evaluation || response.evaluation.length === 0) {
+                        $("#quiz-results").html("<div class='alert alert-warning'>No evaluation results received.</div>");
+                        return;
+                    }
+            
+                    let totalScore = response.evaluation.reduce((sum, result) => sum + (result.score || 0), 0);
+                    let maxScore = response.evaluation.length * 10;
+                    let grade = getGrade(totalScore, maxScore);
+            
+                    let resultsHtml = `
+                        <div class="text-center p-4">
+                            <h3 class="fw-bold">🎯 Your Total Score: <span class="text-primary">${totalScore} / ${maxScore}</span></h3>
+                            <h2 class="fw-bold text-${grade.color} mt-2">Grade: ${grade.text}</h2>
+                        </div>
+                        <h5 class="mt-4">Quiz Results:</h5>
+                        <ul class='list-group'>
+                    `;
+            
+                    response.evaluation.forEach((result, index) => {
+                        const question = quizData[index];
+                        const userAnswer = userAnswers[index];
+                        const correctAnswer = question.correct_answer || "N/A";
+                        const typeLabel = question.type ? question.type.replace('_', ' ').toUpperCase() : "N/A";
+            
+                        let suggestionsHtml = "";
+                        if (result.suggestions) {
+                            suggestionsHtml = Array.isArray(result.suggestions)
+                                ? `<ul>${result.suggestions.map(s => `<li>${s}</li>`).join("")}</ul>`
+                                : `<p>${result.suggestions}</p>`;
+                        }
+            
+                        resultsHtml += `
+                            <li class="list-group-item">
+                                <p><strong>Q${index + 1}:</strong> ${question.question}</p>
+                                <p><strong>🧠 Type:</strong> ${typeLabel}</p>
+                                <p><strong>✅ Your Answer:</strong> ${userAnswer}</p>
+                                <p><strong>📌 Correct Answer:</strong> ${correctAnswer}</p>
+                                <p><strong>⭐ Score:</strong> <span class="fw-bold text-success">${result.score || 0}/10</span></p>
+                                <p><strong>💡 Feedback:</strong> ${result.feedback || "No feedback available."}</p>
+                                <p><strong>📌 Suggestions:</strong> ${suggestionsHtml}</p>
+                            </li>
+                        `;
+                    });
+            
+                    resultsHtml += "</ul>";
+                    $("#quiz-results").html(resultsHtml);
+                },
+                error: function() {
+                    hideLoading();
+                    showAlert("❌ Error submitting quiz. Please try again.");
+                }
+            });
+            
+            // ✅ Grade calculator
+            function getGrade(score, maxScore) {
+                let percentage = (score / maxScore) * 100;
+                if (percentage >= 90) return { text: "A+", color: "success" };
+                if (percentage >= 80) return { text: "A", color: "primary" };
+                if (percentage >= 70) return { text: "B", color: "info" };
+                if (percentage >= 60) return { text: "C", color: "warning" };
+                return { text: "F", color: "danger" };
+            }
+            
+            
+            
+            
+        });
+    });
+</script>
+
+
+
+    
+</body>
+</html>
+
+
+
+

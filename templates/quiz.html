@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Quiz System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        textarea, select, button {
+            width: 80%;
+            max-width: 600px;
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #quizContainer, #output, #evaluationOutput {
+            margin-top: 20px;
+            text-align: left;
+            white-space: pre-wrap;
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+    <script>
+        let generatedQuiz = [];
+
+        // ✅ Function to get URL parameters
+        function getQueryParams() {
+            let params = new URLSearchParams(window.location.search);
+            return params.get("concepts") ? decodeURIComponent(params.get("concepts")) : "";
+        }
+
+        // ✅ Auto-fill concepts on page load
+        window.onload = function () {
+            let conceptsField = document.getElementById("concepts");
+            let prefilledConcepts = getQueryParams();
+
+            if (prefilledConcepts) {
+                conceptsField.value = prefilledConcepts.replace(/,/g, ", ");
+            }
+        };
+
+        // ✅ Generate Quiz
+        async function generateQuiz() {
+            let conceptsText = document.getElementById("concepts").value.trim();
+            let difficulty = document.getElementById("difficulty").value;
+            let output = document.getElementById("output");
+
+            if (!conceptsText) {
+                alert("Please enter at least one concept!");
+                return;
+            }
+
+            output.innerHTML = "Generating quiz... ⏳";
+
+            let concepts = conceptsText.split(",").map(c => c.trim()).filter(c => c); // ✅ List of strings
+
+            try {
+                let response = await fetch("/generate_quiz", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ concepts: concepts, difficulty: difficulty }) // ✅ Fixed request format
+                });
+
+                if (!response.ok) {
+                    throw new Error(Server Error: ${response.status});
+                }
+
+                let data = await response.json();
+                generatedQuiz = data.quiz; // ✅ Store quiz for evaluation
+
+                output.innerHTML = <strong>Generated Quiz:</strong>;
+                displayQuiz(generatedQuiz);
+            } catch (error) {
+                output.innerHTML = <span style="color: red;">❌ Error: ${error.message}</span>;
+            }
+        }
+
+        // ✅ Display Quiz
+        function displayQuiz(quiz) {
+            let quizContainer = document.getElementById("quizContainer");
+            quizContainer.innerHTML = "";
+
+            quiz.forEach((question, index) => {
+                let questionHTML = <p><strong>${index + 1}. ${question.question}</strong></p>;
+
+                if (question.type === "MCQ" && question.choices) {
+                    question.choices.forEach(choice => {
+                        questionHTML += 
+                            <label>
+                                <input type="radio" name="q${index}" value="${choice}"> ${choice}
+                            </label><br>;
+                    });
+                } else {
+                    questionHTML += <input type="text" id="answer${index}" placeholder="Enter your answer" style="width: 100%; padding: 5px;"><br>;
+                }
+
+                quizContainer.innerHTML += questionHTML;
+            });
+
+            quizContainer.innerHTML += <button onclick="evaluateQuiz()">Submit Answers</button>;
+        }
+
+        // ✅ Evaluate Answers
+        async function evaluateQuiz() {
+            let userAnswers = [];
+
+            generatedQuiz.forEach((question, index) => {
+                let answerInput = document.querySelector(input[name="q${index}"]:checked) || document.getElementById(answer${index});
+                userAnswers.push(answerInput ? answerInput.value.trim() : "");
+            });
+
+            let evaluationOutput = document.getElementById("evaluationOutput");
+            evaluationOutput.innerHTML = "Evaluating answers... ⏳";
+
+            try {
+                let response = await fetch("/evaluate_answers", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ quiz: generatedQuiz, answers: userAnswers })
+                });
+
+                if (!response.ok) {
+                    throw new Error(Server Error: ${response.status});
+                }
+
+                let data = await response.json();
+                evaluationOutput.innerHTML = <strong>Evaluation Results:</strong>\n\n${JSON.stringify(data.evaluation, null, 2)};
+            } catch (error) {
+                evaluationOutput.innerHTML = <span style="color: red;">❌ Error: ${error.message}</span>;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>AI Quiz System</h1>
+    <textarea id="concepts" placeholder="Enter concepts (comma-separated)..."></textarea>
+    <br>
+    <select id="difficulty">
+        <option value="easy">Easy</option>
+        <option value="medium" selected>Medium</option>
+        <option value="hard">Hard</option>
+    </select>
+    <br>
+    <button onclick="generateQuiz()">Generate Quiz</button>
+    <pre id="output"></pre>
+    <div id="quizContainer"></div>
+    <pre id="evaluationOutput"></pre>
+</body>
+</html>

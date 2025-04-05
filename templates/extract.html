@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Concept Extractor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        textarea {
+            width: 80%;
+            max-width: 600px;
+            height: 120px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #output {
+            margin-top: 20px;
+            text-align: left;
+            white-space: pre-wrap;
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+    <script>
+        async function extractConcepts() {
+            let text = document.getElementById("inputText").value.trim();
+            let output = document.getElementById("output");
+
+            if (!text) {
+                alert("Please enter some text!");
+                return;
+            }
+
+            output.innerHTML = "Extracting concepts... ⏳";
+
+            try {
+                let response = await fetch("/extract_concepts", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ text: text })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server Error: ${response.status}`);
+                }
+
+                let data = await response.json();
+                output.innerHTML = `<strong>Extracted Concepts:</strong>\n\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                output.innerHTML = `<span style="color: red;">❌ Error: ${error.message}</span>`;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>AI Concept Extractor</h1>
+    <textarea id="inputText" placeholder="Enter your text here..."></textarea>
+    <br>
+    <button onclick="extractConcepts()">Extract Concepts</button>
+    <pre id="output"></pre>
+</body>
+</html>

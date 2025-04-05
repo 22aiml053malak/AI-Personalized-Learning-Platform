@@ -1,0 +1,16 @@
+Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+Flask-Bcrypt==1.0.1
+Flask-Login==0.6.3
+Flask-WTF==1.2.1
+email-validator==2.1.0.post1  # Required by Flask-WTF for email validation
+python-dotenv==1.0.1  # Optional, but good for managing environment variables
+
+# New dependencies for Quiz Generator
+langchain
+langchain-core
+langchain-community
+
+langchain-openai
+groq
+

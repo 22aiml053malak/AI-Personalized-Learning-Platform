@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% block title %}Home - AI Learning Platform{% endblock %}
+
+{% block content %}
+<!-- Drawer Button -->
+<div class="drawer-button" onclick="toggleDrawer()">
+    <i class="fas fa-bars"></i>
+</div>
+
+<!-- Sidebar Drawer -->
+<div id="drawer" class="drawer">
+    <div class="drawer-header">
+        {% if current_user.is_authenticated %}
+            {% if current_user.profile_pic %}
+                <img src="{{ url_for('static', filename='profile_pics/' + current_user.profile_pic) }}" 
+                     alt="Profile Picture" 
+                     class="drawer-profile-pic">
+            {% else %}
+                <img src="{{ url_for('static', filename='profile_pics/default_profile.jpg') }}" 
+                     alt="Default Profile Picture" 
+                     class="drawer-profile-pic">
+            {% endif %}
+            <p class="drawer-username">{{ current_user.username }}</p>
+        {% endif %}
+    </div>
+    <ul class="drawer-menu">
+        <li><a href="{{ url_for('dashboard') }}" class="glow-button dashboard-button"><i class="fas fa-home"></i> Dashboard</a></li>
+        <li>
+            <form action="{{ url_for('upload_profile.upload_profile_pic') }}" method="POST" enctype="multipart/form-data">
+                <input type="file" name="profile_pic" class="form-control" accept="image/*" required>
+                <button type="submit" class="glow-button upload-button"><i class="fas fa-upload"></i> Upload Profile Pic</button>
+            </form>
+        </li>
+        <li>
+            <form action="{{ url_for('upload_profile.delete_profile_pic') }}" method="POST">
+                <button type="submit" class="glow-button delete-button"><i class="fas fa-trash-alt"></i> Delete Profile Pic</button>
+            </form>
+        </li>
+        <li><a href="{{ url_for('logout') }}" class="glow-button logout-button"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+    </ul>
+</div>
+
+<!-- Overlay -->
+<div id="drawer-overlay" class="drawer-overlay" onclick="toggleDrawer()"></div>
+
+ <!-- Lottie Animation -->
+ <div class="text-center my-4">
+    <dotlottie-player 
+        src="https://lottie.host/ee89f543-92a2-4d5f-8087-2b205e0351f5/VPps77DfpR.lottie" 
+        background="transparent" 
+        speed="1" 
+        style="width: 300px; height: 300px; margin: auto;" 
+        loop 
+        autoplay>
+    </dotlottie-player>
+</div>
+
+
+<div class="container">
+    <h1 class="text-center mb-4">
+        Welcome to <span class="highlight">AI-Powered Learning Platform</span>  
+        <br>
+        <small>Transform your learning experience with AI-driven insights 🚀</small>
+    </h1>
+
+   
+
+    <!-- Courses Section -->
+    <div class="row">
+        {% for course in courses %}
+            <div class="col-md-4">
+                <div class="card mb-4 course-card">
+                    <img src="{{ url_for('static', filename='images/' ~ course.image_file) }}" class="card-img-top course-img" alt="{{ course.title }}">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ course.title }}</h5>
+                        <p class="card-text text-muted">{{ course.description }}</p>
+                        <a href="#" class="btn glow-button enroll-button"><i class="fas fa-play-circle"></i> Enroll Now</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Custom Styles for AI Themed UI -->
+<style>
+    /* Drawer (Sidebar) Styles */
+    .drawer-button {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background-color: #001f3f;
+        color: #00d4ff;
+        padding: 12px;
+        border-radius: 50%;
+        cursor: pointer;
+        z-index: 1000;
+        transition: transform 0.3s;
+    }
+
+    .drawer-button:hover {
+        transform: scale(1.1);
+    }
+
+    .drawer {
+        position: fixed;
+        left: -300px;
+        top: 0;
+        width: 300px;
+        height: 100%;
+        background-color: #0a0f2c;
+        color: white;
+        transition: left 0.4s ease;
+        padding: 20px;
+        z-index: 999;
+        box-shadow: 4px 0 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .drawer.open {
+        left: 0;
+    }
+
+    .drawer-profile-pic {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        margin-bottom: 10px;
+        border: 3px solid #00d4ff;
+    }
+
+    .drawer-username {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+
+    .drawer-menu {
+        list-style: none;
+        padding: 0;
+    }
+
+    .drawer-menu li {
+        margin: 15px 0;
+    }
+
+    /* AI Assistant Section */
+    .ai-assistant {
+        background: linear-gradient(135deg, #0a1931, #001f3f);
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        color: white;
+    }
+
+    .assistant-button {
+        background-color: #00d4ff;
+        box-shadow: 0 0 8px rgba(0, 212, 255, 0.6);
+        color: #001f3f;
+    }
+
+    /* General Glow Button */
+    .glow-button {
+        color: #fff;
+        font-weight: bold;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        transition: box-shadow 0.3s ease, transform 0.3s ease;
+    }
+
+    .enroll-button {
+        background-color: #1abc9c;
+        box-shadow: 0 0 8px rgba(26, 188, 156, 0.6);
+    }
+
+    /* Course Cards */
+    .course-card {
+        border-radius: 12px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #001f3f, #003366);
+        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .course-card:hover {
+        transform: scale(1.05);
+        box-shadow: 0px 0px 20px rgba(0, 212, 255, 0.6);
+    }
+</style>
+
+<!-- Drawer Toggle Script -->
+<script>
+    function toggleDrawer() {
+        var drawer = document.getElementById("drawer");
+        var overlay = document.getElementById("drawer-overlay");
+        drawer.classList.toggle("open");
+        overlay.classList.toggle("open");
+    }
+</script>
+
+{% endblock %}
